@@ -1,19 +1,22 @@
-﻿// 2048.cpp : Определяет точку входа для приложения.
-//
-
-#include "pch.h"
+﻿#include "pch.h"
 #include "framework.h"
 #include "2048.h"
+#include "WindowCreator.h"
+#include <CommCtrl.h>
 
 #define MAX_LOADSTRING 100
 
-// Глобальные переменные:
-HINSTANCE hInst;                                // текущий экземпляр
-WCHAR szTitle[MAX_LOADSTRING];                  // Текст строки заголовка
-WCHAR szWindowClass[MAX_LOADSTRING];            // имя класса главного окна
+HINSTANCE hInst;                                
+WCHAR szTitle[MAX_LOADSTRING];                  
+WCHAR szWindowClass[MAX_LOADSTRING];       
+HFONT NewFont = CreateFont(40, 16, 0, 0, 400, 0, 0, 0,
+    DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+    DEFAULT_PITCH | FF_DONTCARE, L"Arial");
+RECT clientRect;
+HBITMAP hbmBack;
+HDC hdcBack;
 
-// Отправить объявления функций, включенных в этот модуль кода:
-ATOM                MyRegisterClass(HINSTANCE hInstance);
+
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
@@ -26,16 +29,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    // TODO: Разместите код здесь.
     Gdiplus::GdiplusStartupInput gdiPlusStartupInput;
     ULONG_PTR gdiPlusToken;
     Gdiplus::GdiplusStartup(&gdiPlusToken, &gdiPlusStartupInput, NULL);
-    // Инициализация глобальных строк
+
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_MY2048, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
+    WindowCreator WC;
+    WC.MyRegisterClass(hInstance, szWindowClass, WndProc);
 
-    // Выполнить инициализацию приложения:
     if (!InitInstance (hInstance, nCmdShow))
     {
         return FALSE;
@@ -45,7 +47,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
-    // Цикл основного сообщения:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
@@ -59,125 +60,88 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     return (int) msg.wParam;
 }
 
-
-
-//
-//  ФУНКЦИЯ: MyRegisterClass()
-//
-//  ЦЕЛЬ: Регистрирует класс окна.
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
-{
-    WNDCLASSEXW wcex;
-
-    wcex.cbSize = sizeof(WNDCLASSEX);
-
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MY2048));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_MY2048);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-
-    return RegisterClassExW(&wcex);
-}
-
-//
-//   ФУНКЦИЯ: InitInstance(HINSTANCE, int)
-//
-//   ЦЕЛЬ: Сохраняет маркер экземпляра и создает главное окно
-//
-//   КОММЕНТАРИИ:
-//
-//        В этой функции маркер экземпляра сохраняется в глобальной переменной, а также
-//        создается и выводится главное окно программы.
-//
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // Сохранить маркер экземпляра в глобальной переменной
-
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   return TRUE;
+   WindowCreator WC;
+   RECT rect = { 0, 0, 600, 500 };
+   return WC.InitInstance(hInstance, nCmdShow, szWindowClass, szTitle, &rect);
 }
 
-//
-//  ФУНКЦИЯ: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  ЦЕЛЬ: Обрабатывает сообщения в главном окне.
-//
-//  WM_COMMAND  - обработать меню приложения
-//  WM_PAINT    - Отрисовка главного окна
-//  WM_DESTROY  - отправить сообщение о выходе и вернуться
-//
-//
+WCHAR ComboBoxTexts[4][4] = {
+    TEXT("4x4"), TEXT("5x5"), TEXT("6x6"), TEXT("3x3")
+};
+WCHAR A[4];
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    GetClientRect(hWnd, &clientRect);
+    HDC hdc = GetDC(hWnd);
+
     switch (message)
     {
     case WM_COMMAND:
+        return 0;
+    case WM_CREATE:
         {
-            int wmId = LOWORD(wParam);
-            // Разобрать выбор в меню:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
+            HWND hEdit = CreateWindow(WC_EDIT, TEXT(""),
+                WS_EX_CLIENTEDGE | WS_BORDER | WS_CHILD | WS_VISIBLE | ES_CENTER,
+                150, 80, 300, 60, hWnd, NULL,
+                (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+                NULL);
+            //Creating ComboBox with level of difficulty
+            HWND hCmb = CreateWindow(WC_COMBOBOX, TEXT(""),
+                CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+                200, 200, 200, 200, hWnd, NULL,
+                (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+                NULL);
+            //Creating Button Starting the game
+            HWND hBtn = CreateWindow(WC_BUTTON, L"START",
+                WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+                220, 320, 120, 60, hWnd, NULL,
+                (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+                NULL);
+            memset(&A, 0, sizeof(A));
+            for (int i = 0; i < 4; i++) {
+                wcscpy_s(A, sizeof(A) / sizeof(TCHAR), (TCHAR*)ComboBoxTexts[i]);
+                SendMessage(hCmb, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)A);
             }
+
+            SendMessage(hBtn, WM_SETFONT, WPARAM(NewFont), 0);
+            SendMessage(hCmb, WM_SETFONT, WPARAM(NewFont), 0);
+            SendMessage(hEdit, WM_SETFONT, WPARAM(NewFont), 0);
+            SendMessage(hCmb, CB_SETCURSEL, (WPARAM)0, (LPARAM)0);
+            InvalidateRect(hWnd, NULL, TRUE);
+            
         }
-        break;
+    return 0;
     case WM_PAINT:
         {
             PAINTSTRUCT ps;
+            SaveDC(hdc);
+            HBRUSH brush = CreateSolidBrush(RGB(214, 252, 212));
+            SelectObject(hdc, brush);
             HDC hdc = BeginPaint(hWnd, &ps);
+            FillRect(hdc, &clientRect, brush);
+            SelectObject(hdc, NewFont);
+            RECT rect = { 150, 150, 450, 200 };
+            WCHAR buff[20] = L"Choose difficulty";
+            SetBkMode(hdc, TRANSPARENT);
+            DrawText(hdc, buff, -1, &rect, DT_CENTER);
+            rect = { 150, 20, 450, 70 };
+            wcscpy_s(buff, L"Enter your name");
+            DrawText(hdc, buff, -1, &rect, DT_CENTER);
             EndPaint(hWnd, &ps);
+            RestoreDC(hdc, -1);
+            DeleteObject(brush);
         }
-        break;
+        return 0;
     case WM_DESTROY:
+        DeleteObject(NewFont);
         PostQuitMessage(0);
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
-}
-
-// Обработчик сообщений для окна "О программе".
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
 }
