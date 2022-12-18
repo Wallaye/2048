@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClInclude Include="2048.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="GameWindowHandler.h" />
     <ClInclude Include="GdiPlusWorker.h" />
     <ClInclude Include="pch.h" />
@@ -151,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="2048.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameWindowHandler.cpp" />
     <ClCompile Include="GdiPlusWorker.cpp" />
     <ClCompile Include="pch.cpp">

@@ -43,7 +43,7 @@ void GdiPlusWorker::DrawString(WCHAR* string, PointF coords, Color color, String
 	else {
 		_temp->DrawString(buff, len, _font, coords, &brush);
 	}
-	delete(buff);
+	delete[](buff);
 }
 
 void GdiPlusWorker::DrawImage(Image* image, RectF rect) {
