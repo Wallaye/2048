@@ -1,4 +1,6 @@
 #pragma once
+#include "pch.h"
+#include "GdiPlusWorker.h"
 class GameWindowHandler
 {
 public:
@@ -6,5 +8,8 @@ public:
 	HBITMAP hbmBack;
 	void Draw(HDC);
 	LRESULT CALLBACK GameWindowWndProc(HWND, UINT, WPARAM, LPARAM);
+private:
+	GdiPlusWorker* _worker;
+
 };
 

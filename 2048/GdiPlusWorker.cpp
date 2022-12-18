@@ -25,16 +25,16 @@ void GdiPlusWorker::EndScene() {
 	EndPaint(_hWnd, &_ps);
 }
 
-void GdiPlusWorker::FontCreate(WCHAR* fontName, REAL size, int style = FontStyleRegular, Unit unit = UnitPoint){
+void GdiPlusWorker::FontCreate(WCHAR* fontName, REAL size, int style, Unit unit){
 	_font = new Font(fontName, size, style, unit);
 }
 
-void GdiPlusWorker::DrawString(char* string, PointF coords, Color color, StringFormat* format = NULL) {
-	int len = strlen(string);
+void GdiPlusWorker::DrawString(WCHAR* string, PointF coords, Color color, StringFormat* format) {
+	int len = lstrlenW(string);
 	WCHAR* buff = new WCHAR[len + 1];
 	buff[len] = 0;
 
-	mbstowcs(buff, string, len);
+	lstrcpyW(buff, string);
 
 	SolidBrush brush(color);
 	if (format != NULL) {

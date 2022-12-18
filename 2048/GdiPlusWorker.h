@@ -9,7 +9,7 @@ public:
 	~GdiPlusWorker();
 	void BeginScene();
 	void EndScene();
-	void DrawString(char*, PointF, Color, StringFormat* format = NULL);
+	void DrawString(WCHAR*, PointF, Color, StringFormat* format = NULL);
 	void FontCreate(WCHAR*, REAL, int style = FontStyleRegular, Unit unit = UnitPoint);
 	
 	void DrawImage(Image* image, RectF rect);
