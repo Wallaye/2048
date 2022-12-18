@@ -1,6 +1,17 @@
 #pragma once
 #include <vector>
 #include <map>
+struct t_array {
+	short index;         //the power of 2 to store
+	char str[8];		 //the string to output
+};
+
+enum DIRECTION {
+	TOP,
+	RIGHT,
+	BOTTOM,
+	LEFT
+};
 class Game
 {
 public:
@@ -43,15 +54,4 @@ public:
 	};
 };
 
-struct t_array {                
-	short index;         //the power of 2 to store
-	char str[8];		 //the string to output
-};
-
-enum DIRECTION {
-	TOP,
-	RIGHT, 
-	BOTTOM, 
-	LEFT
-};
 
