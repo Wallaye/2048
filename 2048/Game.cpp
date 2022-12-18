@@ -4,19 +4,31 @@
 
 Game::Game(int size) {
 	this->size = size;
+	this->canMakeMove = true;
+	this->IsGame = true;
 	Initialize();
 }
+Game::~Game() {};
 
 void Game::Initialize() {
-	field = new int* [size];
 	for (int i = 0; i < size; i++) {
-		field[i] = new int[size];
+		std::vector<int> temp(size);
+		for (auto el : temp) {
+			el = 0;
+		};
+		this->field.push_back(temp);
 	}
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
-			field[i][j] = 0;
-		}
-	}
+	//field = new int* [size];
+	//for (int i = 0; i < size; i++) {
+	//	field[i] = new int[size];
+	//}
+	//for (int i = 0; i < size; i++) {
+	//	for (int j = 0; j < size; j++) {
+	//		field[i][j] = 0;
+	//	}
+	//}
+	GenerateNumber();
+	GenerateNumber();
 }
 
 bool Game::GenerateNumber() {
@@ -58,25 +70,25 @@ bool Game::MakeMove(DIRECTION dir) {
 		success = ShiftElementsUp();
 		break;
 	case LEFT:
-		TurnFieldClockwise(1);
+		TurnFieldClockwise(field, 1);
 		success = ShiftElementsUp();
-		TurnFieldClockwise(3);
+		TurnFieldClockwise(field, 3);
 		break;
 	case BOTTOM:
-		TurnFieldClockwise(2);
+		TurnFieldClockwise(field, 2);
 		success = ShiftElementsUp();
-		TurnFieldClockwise(2);
+		TurnFieldClockwise(field, 2);
 		break;
 	case RIGHT:
-		TurnFieldClockwise(3);
+		TurnFieldClockwise(field, 3);
 		success = ShiftElementsUp();
-		TurnFieldClockwise(1);
+		TurnFieldClockwise(field, 1);
 		break;
 	}
 	return success;
 }
 
-void Game::TurnFieldClockwise(int count) {
+void Game::TurnFieldClockwise(std::vector<std::vector<int>> &field, int count) {
 	int buffer;
 	for (int k = 0; k < count; k++) {
 		for (int i = 0; i < size / 2; i++)
@@ -92,14 +104,14 @@ void Game::TurnFieldClockwise(int count) {
 }
 
 bool Game::CheckForEnd() {
-	int** arr = new int* [size];
+	std::vector<std::vector<int>> arr;
+	std::vector<int> temp;
 	for (int i = 0; i < size; i++) {
-		arr[i] = new int[size];
-	}
-	for (int i = 0; i < size; i++) {
+		std::vector<int> temp(size);
 		for (int j = 0; j < size; j++) {
-			arr[i][j] = field[i][j];
+			temp[j] = field[i][j];
 		}
+		arr.push_back(temp);
 	}
 	bool can_continue = false;
 	for (int k = 0; k < 4 && !can_continue; k++) {
@@ -117,7 +129,7 @@ bool Game::CheckForEnd() {
 				}
 			}
 		}
-		TurnFieldClockwise(1);
+		TurnFieldClockwise(arr, 1);
 	}
 	return can_continue;
 }

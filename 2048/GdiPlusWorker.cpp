@@ -12,7 +12,6 @@ GdiPlusWorker::~GdiPlusWorker() {
 	delete(_graphics);
 	delete(_temp);
 	delete(_buffer);
-	delete(_font);
 	ReleaseDC(_hWnd, _hdc);
 }
 
@@ -26,24 +25,24 @@ void GdiPlusWorker::EndScene() {
 }
 
 void GdiPlusWorker::FontCreate(WCHAR* fontName, REAL size, int style, Unit unit){
-	_font = new Font(fontName, size, style, unit);
+	_fonts.push_back(new Font(fontName, size, style, unit));
 }
 
-void GdiPlusWorker::DrawString(WCHAR* string, PointF coords, Color color, StringFormat* format) {
-	int len = lstrlenW(string);
+void GdiPlusWorker::DrawString(char* string, int index, PointF coords, Color color, StringFormat* format) {
+	int len = strlen(string);
 	WCHAR* buff = new WCHAR[len + 1];
 	buff[len] = 0;
 
-	lstrcpyW(buff, string);
+	MultiByteToWideChar(CP_ACP, 0, string, -1, (LPWSTR)buff, len);
 
 	SolidBrush brush(color);
 	if (format != NULL) {
-		_temp->DrawString(buff, len, _font, coords, format, &brush);
+		_temp->DrawString(buff, len, _fonts[index], coords, format, &brush);
 	}
 	else {
-		_temp->DrawString(buff, len, _font, coords, &brush);
+		_temp->DrawString(buff, len, _fonts[index], coords, &brush);
 	}
-	delete[](buff);
+	delete[] buff;
 }
 
 void GdiPlusWorker::DrawImage(Image* image, RectF rect) {
@@ -54,4 +53,9 @@ void GdiPlusWorker::DrawImage(HBITMAP picture, RectF rect) {
 	Bitmap* bitmap = new Bitmap(picture, NULL);
 	_temp->DrawImage(bitmap, rect);
 	delete(bitmap);
+}
+
+void GdiPlusWorker::FillRect(RectF rect, Color bgColor) {
+	SolidBrush brush(bgColor);
+	_temp->FillRectangle(&brush, rect);
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <map>
+
 struct t_array {
 	short index;         //the power of 2 to store
 	char str[8];		 //the string to output
@@ -17,15 +17,18 @@ class Game
 public:
 	int score;
 	WCHAR* playerName;
-	int **field;
+	std::vector<std::vector<int>> field;
+	//int **field;
 	int size;
+	bool canMakeMove;
+	bool IsGame;
 	Game(int);
 	~Game();
 	
 	void Initialize();
 	bool GenerateNumber();
 	bool MakeMove(DIRECTION dir);
-	void TurnFieldClockwise(int);
+	void TurnFieldClockwise(std::vector<std::vector<int>> &field, int);
 	bool ShiftElementsUp();
 	bool CheckForEnd();
 	int FindMaxPower();
@@ -53,5 +56,3 @@ public:
 	{20, "1048576"},
 	};
 };
-
-

@@ -5,6 +5,7 @@
 #include <CommCtrl.h>
 #include "WindowClass.h"
 #include "GdiPlusWorker.h"
+#include "GameWindowHandler.h"
 
 #define MAX_LOADSTRING 100
 #define START_GAME_BTN 10000
@@ -39,7 +40,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_GAMEWINDOW, szGameWindowClass, MAX_LOADSTRING);
 
     RECT rect = { 0, 0, 600, 500 };
-    WelcomeWindow = new WindowClass(hInstance, (WNDPROC)WndProc, szTitle, szWindowClass, nCmdShow, rect);
+    WelcomeWindow = new WindowClass(hInstance, WndProc, szTitle, szWindowClass, nCmdShow, rect);
     hInst = hInstance;
     _nCmdShow = nCmdShow;
     if (!WelcomeWindow->create()) {
@@ -76,106 +77,74 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_COMMAND:
         if (LOWORD(wParam) == START_GAME_BTN) {
-            RECT rect = { 0, 0, 750, 500 };
-            GameWindow = new WindowClass(hInst, WndProc, szGameWindowClass, szTitle, _nCmdShow, rect);
+            RECT rect = { 0, 0, 600, 750 };
+            GameWindowHandler* g = new GameWindowHandler(4);
+            GameWindow = new WindowClass(hInst, GameWindowHandler::GameWindowWndProc, szGameWindowClass, szTitle, _nCmdShow, rect);
             GameWindow->create();
             ShowWindow(WelcomeWindow->hWnd, SW_HIDE); //Hide welcome window
         }
         return 0;
     case WM_CREATE:
-        {
-            //Creating Edit for inputing player name
-            HWND hEdit = CreateWindow(WC_EDIT, L"player",
-                WS_EX_CLIENTEDGE | WS_BORDER | WS_CHILD | WS_VISIBLE | ES_CENTER,
-                150, 80, 300, 60, hWnd, NULL,
-                (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
-                NULL);
-            //Creating ComboBox with levels of difficulty
-            HWND hCmb = CreateWindow(WC_COMBOBOX, TEXT(""),
-                CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-                200, 200, 200, 200, hWnd, NULL,
-                (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
-                NULL);
-            //Creating Button Starting the game
-            HWND hBtnStart = CreateWindowW(WC_BUTTON, L"START",
-                WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-                200, 290, 200, 60, hWnd, (HMENU)START_GAME_BTN,
-                (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
-                NULL);
-            //Creating Button showing the records
-            HWND hBtnRecords = CreateWindowW(WC_BUTTON, L"RECORDS",
-                WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-                200, 370, 200, 60, hWnd, NULL,
-                (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
-                NULL);
-            memset(&A, 0, sizeof(A));
-            for (int i = 0; i < 4; i++) {
-                wcscpy_s(A, sizeof(A) / sizeof(TCHAR), (TCHAR*)ComboBoxTexts[i]);
-                SendMessage(hCmb, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)A);
-            }
-
-            SendMessage(hBtnStart, WM_SETFONT, WPARAM(NewFont), 0);
-            SendMessage(hBtnRecords, WM_SETFONT, WPARAM(NewFont), 0);
-            SendMessage(hCmb, WM_SETFONT, WPARAM(NewFont), 0);
-            SendMessage(hEdit, WM_SETFONT, WPARAM(NewFont), 0);
-            SendMessage(hCmb, CB_SETCURSEL, (WPARAM)1, (LPARAM)0);
-            InvalidateRect(hWnd, NULL, TRUE);
-        }
-    return 0;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            SaveDC(hdc);
-            HBRUSH brush = CreateSolidBrush(RGB(214, 252, 212));
-            SelectObject(hdc, brush);
-            HDC hdc = BeginPaint(hWnd, &ps);
-            FillRect(hdc, &clientRect, brush);
-            SelectObject(hdc, NewFont);
-            RECT rect = { 150, 150, 450, 200 };
-            WCHAR buff[20] = L"Choose difficulty";
-            SetBkMode(hdc, TRANSPARENT);
-            DrawText(hdc, buff, -1, &rect, DT_CENTER);
-            rect = { 150, 20, 450, 70 };
-            wcscpy_s(buff, L"Enter your name");
-            DrawText(hdc, buff, -1, &rect, DT_CENTER);
-            RestoreDC(hdc, -1);
-            DeleteObject(brush);
-            EndPaint(hWnd, &ps);
-        }
-        return 0;
-    case WM_DESTROY:
-        DeleteObject(NewFont);
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-    return 0;
-}
-
-LRESULT CALLBACK GameWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    GetClientRect(hWnd, &clientRect);
-    HDC hdc = GetDC(hWnd);
-
-    switch (message)
     {
-    case WM_COMMAND:
-        return 0;
-    case WM_CREATE:
-        {
-            
-            InvalidateRect(hWnd, NULL, TRUE);
+        //Creating Edit for inputing player name
+        HWND hEdit = CreateWindow(WC_EDIT, L"player",
+            WS_EX_CLIENTEDGE | WS_BORDER | WS_CHILD | WS_VISIBLE | ES_CENTER,
+            150, 80, 300, 60, hWnd, NULL,
+            (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+            NULL);
+        //Creating ComboBox with levels of difficulty
+        HWND hCmb = CreateWindow(WC_COMBOBOX, TEXT(""),
+            CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+            200, 200, 200, 200, hWnd, NULL,
+            (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+            NULL);
+        //Creating Button Starting the game
+        HWND hBtnStart = CreateWindowW(WC_BUTTON, L"START",
+            WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+            200, 290, 200, 60, hWnd, (HMENU)START_GAME_BTN,
+            (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+            NULL);
+        //Creating Button showing the records
+        HWND hBtnRecords = CreateWindowW(WC_BUTTON, L"RECORDS",
+            WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+            200, 370, 200, 60, hWnd, NULL,
+            (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+            NULL);
+        memset(&A, 0, sizeof(A));
+        for (int i = 0; i < 4; i++) {
+            wcscpy_s(A, sizeof(A) / sizeof(TCHAR), (TCHAR*)ComboBoxTexts[i]);
+            SendMessage(hCmb, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)A);
         }
+
+        SendMessage(hBtnStart, WM_SETFONT, WPARAM(NewFont), 0);
+        SendMessage(hBtnRecords, WM_SETFONT, WPARAM(NewFont), 0);
+        SendMessage(hCmb, WM_SETFONT, WPARAM(NewFont), 0);
+        SendMessage(hEdit, WM_SETFONT, WPARAM(NewFont), 0);
+        SendMessage(hCmb, CB_SETCURSEL, (WPARAM)1, (LPARAM)0);
+        InvalidateRect(hWnd, NULL, TRUE);
+    }
     return 0;
     case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            
-            EndPaint(hWnd, &ps);
-        }
-        return 0;
+    {
+        PAINTSTRUCT ps;
+        SaveDC(hdc);
+        HBRUSH brush = CreateSolidBrush(RGB(214, 252, 212));
+        SelectObject(hdc, brush);
+        HDC hdc = BeginPaint(hWnd, &ps);
+        FillRect(hdc, &clientRect, brush);
+        SelectObject(hdc, NewFont);
+        RECT rect = { 150, 150, 450, 200 };
+        WCHAR buff[20] = L"Choose difficulty";
+        SetBkMode(hdc, TRANSPARENT);
+        DrawText(hdc, buff, -1, &rect, DT_CENTER);
+        rect = { 150, 20, 450, 70 };
+        wcscpy_s(buff, L"Enter your name");
+        DrawText(hdc, buff, -1, &rect, DT_CENTER);
+        RestoreDC(hdc, -1);
+        DeleteObject(brush);
+        EndPaint(hWnd, &ps);
+    }
+    return 0;
     case WM_DESTROY:
         DeleteObject(NewFont);
         PostQuitMessage(0);
@@ -185,4 +154,3 @@ LRESULT CALLBACK GameWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
     }
     return 0;
 }
-
