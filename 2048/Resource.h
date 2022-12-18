@@ -6,6 +6,7 @@
 #define IDD_MY2048_DIALOG               102
 #define IDS_APP_TITLE                   103
 #define IDM_ABOUT                       104
+#define IDC_GAMEWINDOW                  104
 #define IDI_MY2048                      107
 #define IDI_SMALL                       108
 #define IDC_MY2048                      109

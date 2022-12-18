@@ -4,20 +4,22 @@
 #include "WindowCreator.h"
 #include <CommCtrl.h>
 #include "WindowClass.h"
+#include "GdiPlusWorker.h"
 
 #define MAX_LOADSTRING 100
 #define START_GAME_BTN 10000
 
 HINSTANCE hInst;                                
 WCHAR szTitle[MAX_LOADSTRING];                  
-WCHAR szWindowClass[MAX_LOADSTRING];       
+WCHAR szWindowClass[MAX_LOADSTRING];      
+WCHAR szGameWindowClass[MAX_LOADSTRING];
 HFONT NewFont = CreateFont(40, 16, 0, 0, 400, 0, 0, 0,
     DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
     DEFAULT_PITCH | FF_DONTCARE, L"Arial");
 RECT clientRect;
 WindowClass *WelcomeWindow, *GameWindow;
+int _nCmdShow;
 
-BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -34,9 +36,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_MY2048, szWindowClass, MAX_LOADSTRING);
+    LoadStringW(hInstance, IDC_GAMEWINDOW, szGameWindowClass, MAX_LOADSTRING);
 
     RECT rect = { 0, 0, 600, 500 };
     WelcomeWindow = new WindowClass(hInstance, (WNDPROC)WndProc, szTitle, szWindowClass, nCmdShow, rect);
+    hInst = hInstance;
+    _nCmdShow = nCmdShow;
     if (!WelcomeWindow->create()) {
         return FALSE;
     };
@@ -57,19 +62,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     return (int) msg.wParam;
 }
 
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-    hInst = hInstance; // Сохранить маркер экземпляра в глобальной переменной
-    WindowCreator WC;
-    RECT rect = { 0, 0, 600, 500 };
-    return WC.InitInstance(hInstance, nCmdShow, szWindowClass, szTitle, &rect);
-}
-
+//WelcomeWindow WNDPROC
 WCHAR ComboBoxTexts[4][4] = {
     TEXT("3x3"), TEXT("4x4"), TEXT("5x5"), TEXT("6x6")
 };
 WCHAR A[4];
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     GetClientRect(hWnd, &clientRect);
@@ -79,17 +76,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_COMMAND:
         if (LOWORD(wParam) == START_GAME_BTN) {
-            GameWindow = new WindowClass();
+            RECT rect = { 0, 0, 750, 500 };
+            GameWindow = new WindowClass(hInst, WndProc, szGameWindowClass, szTitle, _nCmdShow, rect);
+            GameWindow->create();
+            ShowWindow(WelcomeWindow->hWnd, SW_HIDE); //Hide welcome window
         }
         return 0;
     case WM_CREATE:
         {
+            //Creating Edit for inputing player name
             HWND hEdit = CreateWindow(WC_EDIT, L"player",
                 WS_EX_CLIENTEDGE | WS_BORDER | WS_CHILD | WS_VISIBLE | ES_CENTER,
                 150, 80, 300, 60, hWnd, NULL,
                 (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
                 NULL);
-            //Creating ComboBox with level of difficulty
+            //Creating ComboBox with levels of difficulty
             HWND hCmb = CreateWindow(WC_COMBOBOX, TEXT(""),
                 CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
                 200, 200, 200, 200, hWnd, NULL,
@@ -101,6 +102,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 200, 290, 200, 60, hWnd, (HMENU)START_GAME_BTN,
                 (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
                 NULL);
+            //Creating Button showing the records
             HWND hBtnRecords = CreateWindowW(WC_BUTTON, L"RECORDS",
                 WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
                 200, 370, 200, 60, hWnd, NULL,
@@ -138,6 +140,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             DrawText(hdc, buff, -1, &rect, DT_CENTER);
             RestoreDC(hdc, -1);
             DeleteObject(brush);
+            EndPaint(hWnd, &ps);
+        }
+        return 0;
+    case WM_DESTROY:
+        DeleteObject(NewFont);
+        PostQuitMessage(0);
+        break;
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
+}
+
+LRESULT CALLBACK GameWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    GetClientRect(hWnd, &clientRect);
+    HDC hdc = GetDC(hWnd);
+
+    switch (message)
+    {
+    case WM_COMMAND:
+        return 0;
+    case WM_CREATE:
+        {
+            
+            InvalidateRect(hWnd, NULL, TRUE);
+        }
+    return 0;
+    case WM_PAINT:
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+            
             EndPaint(hWnd, &ps);
         }
         return 0;

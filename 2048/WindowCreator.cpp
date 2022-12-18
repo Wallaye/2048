@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "WindowCreator.h"
+#include "WindowClass.h"
 
 WindowCreator::WindowCreator() { };
 WindowCreator::~WindowCreator() { };
@@ -24,7 +25,7 @@ ATOM WindowCreator::MyRegisterClass(HINSTANCE hInstance, WCHAR* szWindowClass, W
     return RegisterClassExW(&wcex);
 };
 
-BOOL WindowCreator::InitInstance(HINSTANCE hInstance, int nCmdShow, WCHAR* szWindowClass, WCHAR* szTitle, RECT* rect) {
+BOOL WindowCreator::InitInstance(HINSTANCE hInstance, int nCmdShow, WCHAR* szWindowClass, WCHAR* szTitle, RECT* rect, WindowClass* wc) {
     HWND hWnd = CreateWindowEx(0, szWindowClass, szTitle, WS_OVERLAPPED | WS_BORDER | WS_SYSMENU | WS_VISIBLE,
         (GetSystemMetrics(SM_CXSCREEN) - rect->right) / 2, (GetSystemMetrics(SM_CYSCREEN) - rect->bottom) / 2,
         rect->right, rect->bottom, 0, 0, hInstance, NULL);
@@ -34,6 +35,7 @@ BOOL WindowCreator::InitInstance(HINSTANCE hInstance, int nCmdShow, WCHAR* szWin
         return FALSE;
     }
 
+    wc->hWnd = hWnd;
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 

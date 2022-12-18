@@ -9,10 +9,10 @@ WindowClass::WindowClass(HINSTANCE hInst, WNDPROC proc, WCHAR* title, WCHAR* nam
 	this->nCmdShow = cmd;
 	this->rect = rect;
 }
-
 WindowClass::~WindowClass() {};
+
 bool WindowClass::create() {
 	WindowCreator WC;
 	WC.MyRegisterClass(hInstance, szWindowClass, WndProc);
-	return WC.InitInstance(hInstance, nCmdShow, szWindowClass, szTitle, &rect);
+	return WC.InitInstance(hInstance, nCmdShow, szWindowClass, szTitle, &rect, this);
 }
