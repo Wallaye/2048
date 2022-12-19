@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "GameWindowHandler.h"
-#include "Game.h"
 
 Color colors[21] = {
     Color(195, 181, 169),
@@ -25,20 +24,27 @@ Color colors[21] = {
     Color(255, 23, 22),
     Color(255, 23, 22)
 };
-Game* game;
-GameWindowHandler::GameWindowHandler(int size, WCHAR* name) {
-    if (game != NULL)
-        game = new Game(size, name);
-};
+
+GameWindowHandler* GameWindowHandler::_instance;
+GameWindowHandler::GameWindowHandler() {};
 GameWindowHandler::~GameWindowHandler() { 
 	delete(_worker);
 };
 
-GameWindowHandler* g;
+GameWindowHandler* GameWindowHandler::GetInstance() {
+    if (_instance == NULL) {
+        _instance = new GameWindowHandler();
+    }
+    return _instance;
+};
+
 void Move(DIRECTION);
+
+GameWindowHandler* g;
 
 LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    g = GameWindowHandler::GetInstance();
     GetClientRect(hWnd, &g->clientRect);
     HDC hdc = GetDC(hWnd);
     DIRECTION direction;
@@ -48,7 +54,7 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
     case WM_COMMAND:
         return 0;
     case WM_KEYDOWN:
-        if (game->IsGame) {
+        if (g->game->IsGame) {
             switch (wParam) {
             case 0x41:	    //a
                 direction = LEFT;
@@ -71,13 +77,12 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
                 InvalidateRect(hWnd, NULL, FALSE);
                 break;
             }
-            game->IsGame = game->CheckForEnd();
+            g->game->IsGame = g->game->CheckForEnd();
         }
         else return DefWindowProc(hWnd, message, wParam, lParam); 
         return 0;
     case WM_CREATE:
     {
-        g = new GameWindowHandler(game->size, game->playerName);
         g->_worker = new GdiPlusWorker(hWnd);
         g->_worker->FontCreate((WCHAR*)"Arial", 24);
         g->_worker->FontCreate((WCHAR*)"Arial", 32);
@@ -102,9 +107,9 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
 }
 
 void Move(DIRECTION direction) {
-    game->canMakeMove = game->MakeMove(direction);
-    if (game->canMakeMove) {
-        game->GenerateNumber();
+    g->game->canMakeMove = g->game->MakeMove(direction);
+    if (g->game->canMakeMove) {
+        g->game->GenerateNumber();
     }
 }
 
@@ -121,15 +126,16 @@ void GameWindowHandler::Draw() {
     char buff[10];
     _itoa_s(game->score, buff, 10);
     g->_worker->DrawString(buff, 1, PointF(480, 75), Color(0, 0, 0), &format);
-    for (int i = 0; i < game->size; i++) {
-        for (int j = 0; j < game->size; j++) {
+    for (int i = 0; i < g->game->size; i++) {
+        for (int j = 0; j < g->game->size; j++) {
             rect.X = 10 + (j + 1) * BorderSize + j * CellSize;
             rect.Y = 140 + (i + 1) * BorderSize + i * CellSize;
             rect.Width = rect.Height = CellSize;
-            g->_worker->FillRect(rect, colors[game->field[i][j]]);
+            g->_worker->FillRect(rect, colors[g->game->field[i][j]]);
             PointF point(rect.X + CellSize / 2, rect.Y + CellSize / 2);
-            g->_worker->DrawString((char*)game->array_of_accordance[game->field[i][j]].str,
+            g->_worker->DrawString((char*)g->game->array_of_accordance[g->game->field[i][j]].str,
                 0, point, Color(0, 0, 0), &format);
         }
     }
 }
+#undef G

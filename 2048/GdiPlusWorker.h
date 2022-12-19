@@ -12,7 +12,6 @@ public:
 	void EndScene();
 	void DrawString(char*, int, PointF, Color, StringFormat* format = NULL);
 	void FontCreate(WCHAR*, REAL, int style = FontStyleRegular, Unit unit = UnitPoint);
-	
 	void DrawImage(Image* image, RectF rect);
 	void DrawImage(HBITMAP picture, RectF rect);
 	void FillRect(RectF, Color);

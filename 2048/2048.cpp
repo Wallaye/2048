@@ -95,11 +95,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             length++;
             WCHAR str[32];
             GetWindowTextW(hEdit, str, length);
-            GameWindowHandler* g = new GameWindowHandler(index+3, str);
+            GameWindowHandler* gwh = GameWindowHandler::GetInstance();
+            gwh->game = new Game(index + 3, str);
+            gwh->options = options[index];
             GameWindow = new WindowClass(hInst, GameWindowHandler::GameWindowWndProc, szGameWindowClass, szTitle, _nCmdShow, options[0].rect);
             GameWindow->create();
             ShowWindow(WelcomeWindow->hWnd, SW_HIDE); //Hide welcome window
-            delete g;
         }
         return 0;
     case WM_CREATE:

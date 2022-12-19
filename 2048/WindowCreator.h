@@ -2,7 +2,7 @@
 
 #include "pch.h"
 #include "framework.h"
-#include "2048.h"
+#include "resource.h"
 
 class WindowClass;
 
