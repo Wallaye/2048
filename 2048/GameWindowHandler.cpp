@@ -26,8 +26,9 @@ Color colors[21] = {
     Color(255, 23, 22)
 };
 Game* game;
-GameWindowHandler::GameWindowHandler(int size) {
-    game = new Game(size);
+GameWindowHandler::GameWindowHandler(int size, WCHAR* name) {
+    if (game != NULL)
+        game = new Game(size, name);
 };
 GameWindowHandler::~GameWindowHandler() { 
 	delete(_worker);
@@ -76,10 +77,11 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
         return 0;
     case WM_CREATE:
     {
-        g = new GameWindowHandler(game->size);
+        g = new GameWindowHandler(game->size, game->playerName);
         g->_worker = new GdiPlusWorker(hWnd);
         g->_worker->FontCreate((WCHAR*)"Arial", 24);
         g->_worker->FontCreate((WCHAR*)"Arial", 32);
+        g->_worker->FontCreate((WCHAR*)"Arial", 16);
         InvalidateRect(hWnd, NULL, TRUE);
     }
     return 0;
@@ -106,9 +108,9 @@ void Move(DIRECTION direction) {
     }
 }
 
-const int CellSize = 127;
-const int BorderSize = 10;
 void GameWindowHandler::Draw() {
+    const int CellSize = 127;
+    const int BorderSize = 10;
     RectF rect;
     StringFormat format;
     format.SetAlignment(StringAlignmentCenter);

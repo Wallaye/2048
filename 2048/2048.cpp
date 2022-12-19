@@ -64,48 +64,66 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 }
 
 //WelcomeWindow WNDPROC
+GameWindowOptions options[4]{
+    {{0, 0, 600, 750}, {10, 140, 560, 565}, 50, 50},
+    {{0, 0, 600, 750}, {10, 140, 560, 565}, 127, 10},
+    {{0, 0, 600, 750}, {10, 140, 560, 565}, 127, 10},
+    {{0, 0, 600, 750}, {10, 140, 560, 565}, 127, 10},
+};
 WCHAR ComboBoxTexts[4][4] = {
     TEXT("3x3"), TEXT("4x4"), TEXT("5x5"), TEXT("6x6")
 };
 WCHAR A[4];
+HWND hCmb, hEdit, hBtnStart, hBtnRecords;
+int index = 1;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     GetClientRect(hWnd, &clientRect);
     HDC hdc = GetDC(hWnd);
-
     switch (message)
     {
     case WM_COMMAND:
+        if (HIWORD(wParam) == CBN_SELCHANGE) {
+            HWND const control{ (HWND)lParam };
+            int ind = SendMessageW(control, CB_GETCURSEL, 0, 0);
+            if (ind != CB_ERR) {
+                index = ind;
+            }
+        }
         if (LOWORD(wParam) == START_GAME_BTN) {
-            RECT rect = { 0, 0, 600, 750 };
-            GameWindowHandler* g = new GameWindowHandler(4);
-            GameWindow = new WindowClass(hInst, GameWindowHandler::GameWindowWndProc, szGameWindowClass, szTitle, _nCmdShow, rect);
+            int length = GetWindowTextLength(hEdit);
+            length++;
+            WCHAR str[32];
+            GetWindowTextW(hEdit, str, length);
+            GameWindowHandler* g = new GameWindowHandler(index+3, str);
+            GameWindow = new WindowClass(hInst, GameWindowHandler::GameWindowWndProc, szGameWindowClass, szTitle, _nCmdShow, options[0].rect);
             GameWindow->create();
             ShowWindow(WelcomeWindow->hWnd, SW_HIDE); //Hide welcome window
+            delete g;
         }
         return 0;
     case WM_CREATE:
     {
         //Creating Edit for inputing player name
-        HWND hEdit = CreateWindow(WC_EDIT, L"player",
+        hEdit = CreateWindow(WC_EDIT, L"player",
             WS_EX_CLIENTEDGE | WS_BORDER | WS_CHILD | WS_VISIBLE | ES_CENTER,
             150, 80, 300, 60, hWnd, NULL,
             (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
             NULL);
         //Creating ComboBox with levels of difficulty
-        HWND hCmb = CreateWindow(WC_COMBOBOX, TEXT(""),
+        hCmb = CreateWindow(WC_COMBOBOX, TEXT(""),
             CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
             200, 200, 200, 200, hWnd, NULL,
             (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
             NULL);
         //Creating Button Starting the game
-        HWND hBtnStart = CreateWindowW(WC_BUTTON, L"START",
+        hBtnStart = CreateWindowW(WC_BUTTON, L"START",
             WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
             200, 290, 200, 60, hWnd, (HMENU)START_GAME_BTN,
             (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
             NULL);
         //Creating Button showing the records
-        HWND hBtnRecords = CreateWindowW(WC_BUTTON, L"RECORDS",
+        hBtnRecords = CreateWindowW(WC_BUTTON, L"RECORDS",
             WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
             200, 370, 200, 60, hWnd, NULL,
             (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),

@@ -2,7 +2,7 @@
 #include "Game.h"
 #include <random>
 
-Game::Game(int size) {
+Game::Game(int size, WCHAR* name) {
 	this->size = size;
 	this->canMakeMove = true;
 	this->IsGame = true;
@@ -18,15 +18,6 @@ void Game::Initialize() {
 		};
 		this->field.push_back(temp);
 	}
-	//field = new int* [size];
-	//for (int i = 0; i < size; i++) {
-	//	field[i] = new int[size];
-	//}
-	//for (int i = 0; i < size; i++) {
-	//	for (int j = 0; j < size; j++) {
-	//		field[i][j] = 0;
-	//	}
-	//}
 	GenerateNumber();
 	GenerateNumber();
 }

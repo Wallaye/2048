@@ -18,11 +18,10 @@ public:
 	int score;
 	WCHAR* playerName;
 	std::vector<std::vector<int>> field;
-	//int **field;
 	int size;
 	bool canMakeMove;
 	bool IsGame;
-	Game(int);
+	Game(int, WCHAR*);
 	~Game();
 	
 	void Initialize();
