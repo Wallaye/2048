@@ -4,9 +4,9 @@
 GdiPlusWorker::GdiPlusWorker(HWND hWnd) : _hWnd(hWnd) {
 	GetClientRect(_hWnd, &_size);
 	_hdc = GetDC(_hWnd);
-	_graphics = new Graphics(_hdc);
+	_graphics = new Gdiplus::Graphics(_hdc);
 	_buffer = new Bitmap(_size.right, _size.bottom);
-	_temp = new Graphics(_buffer);
+	_temp = new Gdiplus::Graphics(_buffer);
 }
 GdiPlusWorker::~GdiPlusWorker() {
 	delete(_graphics);
@@ -43,6 +43,18 @@ void GdiPlusWorker::DrawString(char* string, int index, PointF coords, Color col
 		_temp->DrawString(buff, len, _fonts[index], coords, &brush);
 	}
 	delete[] buff;
+}
+
+void GdiPlusWorker::DrawString(WCHAR* string, int index, PointF coords, Color color, StringFormat* format) {
+	int len = lstrlenW(string);
+	len++;
+	SolidBrush brush(color);
+	if (format != NULL) {
+		_temp->DrawString(string, len, _fonts[index], coords, format, &brush);
+	}
+	else {
+		_temp->DrawString(string, len, _fonts[index], coords, &brush);
+	}
 }
 
 void GdiPlusWorker::DrawImage(Image* image, RectF rect) {

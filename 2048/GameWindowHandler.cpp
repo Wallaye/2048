@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GameWindowHandler.h"
+#include "WindowClass.h"
 
 Color colors[21] = {
     Color(195, 181, 169),
@@ -32,7 +33,7 @@ GameWindowHandler::~GameWindowHandler() {
 };
 
 GameWindowHandler* GameWindowHandler::GetInstance() {
-    if (_instance == NULL) {
+    if (_instance == nullptr) {
         _instance = new GameWindowHandler();
     }
     return _instance;
@@ -42,6 +43,7 @@ void Move(DIRECTION);
 
 GameWindowHandler* g;
 
+HWND hBtn;
 LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     g = GameWindowHandler::GetInstance();
@@ -52,6 +54,10 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
     switch (message)
     {
     case WM_COMMAND:
+        if (LOWORD(wParam) == 10001) {
+            DestroyWindow(hWnd);
+            ShowWindow(WindowClass::windows[0]->hWnd, SW_SHOW);
+        }
         return 0;
     case WM_KEYDOWN:
         if (g->game->IsGame) {
@@ -78,6 +84,12 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
                 break;
             }
             g->game->IsGame = g->game->CheckForEnd();
+            if (hBtn == NULL && !g->game->IsGame)
+                HWND hBtn = CreateWindowW(L"BUTTON", L"BACK",
+                    WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+                    30, 50, 70, 30, hWnd, (HMENU)10001,
+                    (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+                    NULL);
         }
         else return DefWindowProc(hWnd, message, wParam, lParam); 
         return 0;
@@ -87,9 +99,10 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
         g->_worker->FontCreate((WCHAR*)"Arial", 24);
         g->_worker->FontCreate((WCHAR*)"Arial", 32);
         g->_worker->FontCreate((WCHAR*)"Arial", 16);
-        InvalidateRect(hWnd, NULL, TRUE);
     }
     return 0;
+    case WM_SHOWWINDOW:
+        InvalidateRect(hWnd, NULL, TRUE);
     case WM_PAINT:
     {
         g->_worker->BeginScene();
@@ -98,7 +111,9 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
     }
     return 0;
     case WM_DESTROY:
-        PostQuitMessage(0);
+        delete GameWindowHandler::_instance->game;
+        delete WindowClass::windows[1];
+        WindowClass::windows.erase(WindowClass::windows.begin() + 1);
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
@@ -123,6 +138,7 @@ void GameWindowHandler::Draw() {
     g->_worker->FillRect(g->options.rect, Color(240, 240, 240));
     g->_worker->FillRect(g->options.field, Color(159, 136, 117));
     g->_worker->DrawString((char*)"SCORE:", 1, g->options.scorePoint, Color(0, 0, 0));
+    g->_worker->DrawString(g->game->playerName, 2, PointF(10, 10), Color(123, 123, 123));
     char buff[10];
     _itoa_s(game->score, buff, 10);
     PointF score = g->options.scorePoint;
@@ -140,5 +156,14 @@ void GameWindowHandler::Draw() {
                 0, point, Color(0, 0, 0), &format);
         }
     }
+    if (!g->game->IsGame) {
+        PointF point = g->options.scorePoint;
+        point.Y -= 50;
+        if (g->game->FindMaxPower() < g->game->MaxPower) {
+            g->_worker->DrawString((char*)"YOU LOST!", 1, point, Color(255, 0, 0));
+        }
+        else {
+            g->_worker->DrawString((char*)"YOU WON!", 1, point, Color(0, 255, 0));
+        }
+    }
 }
-#undef G

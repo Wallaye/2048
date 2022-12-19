@@ -17,6 +17,7 @@ public:
 	RectF Rect;
 	GameWindowOptions options;
 	Game* game;
+	bool EndedAlready = false;
 	static GameWindowHandler* GetInstance();
 	static LRESULT CALLBACK GameWindowWndProc(HWND, UINT, WPARAM, LPARAM);
 private:

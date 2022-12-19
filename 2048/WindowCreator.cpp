@@ -34,10 +34,6 @@ BOOL WindowCreator::InitInstance(HINSTANCE hInstance, int nCmdShow, WCHAR* szWin
     {
         return FALSE;
     }
-
     wc->hWnd = hWnd;
-    ShowWindow(hWnd, nCmdShow);
-    UpdateWindow(hWnd);
-
     return TRUE;
 };

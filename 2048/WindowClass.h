@@ -1,5 +1,6 @@
 #pragma once
 #include "WindowCreator.h"
+#include <vector>
 
 class WindowClass
 {
@@ -14,6 +15,7 @@ public:
 	bool create();
 	WindowClass(HINSTANCE, WNDPROC, WCHAR*, WCHAR*, int, RECT);
 	~WindowClass();
+	static std::vector<WindowClass*> windows;
 private:
 };
 

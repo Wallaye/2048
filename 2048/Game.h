@@ -12,11 +12,18 @@ enum DIRECTION {
 	BOTTOM,
 	LEFT
 };
+#define TEST
+#ifdef TEST
+#define MAXPOWER 7
+#else
+#define MAXPOWER 11
+#endif
 class Game
 {
 public:
 	int score;
-	WCHAR* playerName;
+	const int MaxPower = MAXPOWER;
+	WCHAR playerName[32];
 	std::vector<std::vector<int>> field;
 	int size;
 	bool canMakeMove;

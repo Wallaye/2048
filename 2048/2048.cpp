@@ -46,6 +46,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (!WelcomeWindow->create()) {
         return FALSE;
     };
+    ShowWindow(WelcomeWindow->hWnd, WelcomeWindow->nCmdShow);
+    UpdateWindow(WelcomeWindow->hWnd);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MY2048));
 
     MSG msg;
@@ -101,7 +103,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             RECT rect = { gwh->options.rect.X, gwh->options.rect.Y, gwh->options.rect.Width, gwh->options.rect.Height };
             GameWindow = new WindowClass(hInst, GameWindowHandler::GameWindowWndProc, szGameWindowClass, szTitle, _nCmdShow, rect);
             GameWindow->create();
+            ShowWindow(GameWindow->hWnd, GameWindow->nCmdShow);
+            UpdateWindow(GameWindow->hWnd);
             ShowWindow(WelcomeWindow->hWnd, SW_HIDE); //Hide welcome window
+            //delete[] str;
         }
         return 0;
     case WM_CREATE:

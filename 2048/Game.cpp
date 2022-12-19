@@ -3,6 +3,7 @@
 #include <random>
 
 Game::Game(int size, WCHAR* name) {
+	lstrcpyW(playerName, name);
 	this->size = size;
 	this->canMakeMove = true;
 	this->IsGame = true;
