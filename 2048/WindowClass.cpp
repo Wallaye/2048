@@ -1,7 +1,10 @@
 #include "pch.h"
 #include "WindowClass.h"
 
-std::vector<WindowClass*> WindowClass::windows;
+WindowClass* WindowClass::WelcomeWindow;
+WindowClass* WindowClass::GameWindow;
+WindowClass* WindowClass::RecordWindow;
+
 WindowClass::WindowClass(HINSTANCE hInst, WNDPROC proc, WCHAR* title, WCHAR* name, int cmd, RECT rect) {
 	this->hInstance = hInst;
 	this->WndProc = proc;
@@ -9,7 +12,6 @@ WindowClass::WindowClass(HINSTANCE hInst, WNDPROC proc, WCHAR* title, WCHAR* nam
 	this->szWindowClass = name;
 	this->nCmdShow = cmd;
 	this->rect = rect;
-	windows.push_back(this);
 }
 WindowClass::~WindowClass() {};
 

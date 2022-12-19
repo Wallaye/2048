@@ -2,6 +2,7 @@
 #include "GdiPlusWorker.h"
 #include "Game.h"
 
+
 class GameWindowOptions {
 public:
 	RectF rect;

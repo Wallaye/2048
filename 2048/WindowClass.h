@@ -15,7 +15,9 @@ public:
 	bool create();
 	WindowClass(HINSTANCE, WNDPROC, WCHAR*, WCHAR*, int, RECT);
 	~WindowClass();
-	static std::vector<WindowClass*> windows;
+	static WindowClass* WelcomeWindow;
+	static WindowClass* GameWindow;
+	static WindowClass* RecordWindow;
 private:
 };
 

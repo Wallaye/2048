@@ -6,19 +6,22 @@
 #include "WindowClass.h"
 #include "GdiPlusWorker.h"
 #include "GameWindowHandler.h"
+#include "RecordWindowHandle.h"
 
 #define MAX_LOADSTRING 100
 #define START_GAME_BTN 10000
+#define RECORDS_GAME_BTN 10002
 
 HINSTANCE hInst;                                
 WCHAR szTitle[MAX_LOADSTRING];                  
 WCHAR szWindowClass[MAX_LOADSTRING];      
 WCHAR szGameWindowClass[MAX_LOADSTRING];
+WCHAR szRecordsWindowClass[MAX_LOADSTRING];
 HFONT NewFont = CreateFont(40, 16, 0, 0, 400, 0, 0, 0,
     DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
     DEFAULT_PITCH | FF_DONTCARE, L"Arial");
 RECT clientRect;
-WindowClass *WelcomeWindow, *GameWindow;
+WindowClass *WelcomeWindow, *GameWindow, *RecordWindow;
 int _nCmdShow;
 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -31,6 +34,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
+
     Gdiplus::GdiplusStartupInput gdiPlusStartupInput;
     ULONG_PTR gdiPlusToken;
     Gdiplus::GdiplusStartup(&gdiPlusToken, &gdiPlusStartupInput, NULL);
@@ -38,9 +42,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_MY2048, szWindowClass, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_GAMEWINDOW, szGameWindowClass, MAX_LOADSTRING);
+    LoadStringW(hInstance, IDS_RECORDSWINDOW, szRecordsWindowClass, MAX_LOADSTRING);
 
     RECT rect = { 0, 0, 600, 500 };
     WelcomeWindow = new WindowClass(hInstance, WndProc, szTitle, szWindowClass, nCmdShow, rect);
+    WindowClass::WelcomeWindow = WelcomeWindow;
     hInst = hInstance;
     _nCmdShow = nCmdShow;
     if (!WelcomeWindow->create()) {
@@ -51,6 +57,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MY2048));
 
     MSG msg;
+    
+    RecordWindowHandle::ReadRecords();
 
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -94,6 +102,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         if (LOWORD(wParam) == START_GAME_BTN) {
             int length = GetWindowTextLength(hEdit);
+            if (length < 1) {
+                MessageBoxW(hWnd, L"Enter UserName", L"FAIL", MB_OK);
+                return 0;
+            }
             length++;
             WCHAR str[32];
             GetWindowTextW(hEdit, str, length);
@@ -102,11 +114,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             gwh->options = options[index];
             RECT rect = { gwh->options.rect.X, gwh->options.rect.Y, gwh->options.rect.Width, gwh->options.rect.Height };
             GameWindow = new WindowClass(hInst, GameWindowHandler::GameWindowWndProc, szGameWindowClass, szTitle, _nCmdShow, rect);
+            WindowClass::GameWindow = GameWindow;
             GameWindow->create();
             ShowWindow(GameWindow->hWnd, GameWindow->nCmdShow);
             UpdateWindow(GameWindow->hWnd);
             ShowWindow(WelcomeWindow->hWnd, SW_HIDE); //Hide welcome window
             //delete[] str;
+        }
+        else if (LOWORD(wParam) == RECORDS_GAME_BTN) {
+            RECT rect = { 0, 0, 300, 600 };
+            RecordWindow = new WindowClass(hInst, RecordWindowHandle::RecordWndProc, szRecordsWindowClass, szTitle, _nCmdShow, rect);
+            WindowClass::RecordWindow = RecordWindow;
+            RecordWindow->create();
+            ShowWindow(RecordWindow->hWnd, RecordWindow->nCmdShow);
+            UpdateWindow(RecordWindow->hWnd);
+            ShowWindow(WelcomeWindow->hWnd, SW_HIDE);
         }
         return 0;
     case WM_CREATE:
@@ -132,7 +154,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         //Creating Button showing the records
         hBtnRecords = CreateWindowW(WC_BUTTON, L"RECORDS",
             WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-            200, 370, 200, 60, hWnd, NULL,
+            200, 370, 200, 60, hWnd, (HMENU)RECORDS_GAME_BTN,
             (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
             NULL);
         memset(&A, 0, sizeof(A));

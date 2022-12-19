@@ -145,6 +145,7 @@
     <ClInclude Include="GameWindowHandler.h" />
     <ClInclude Include="GdiPlusWorker.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="RecordWindowHandle.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="WindowClass.h" />
@@ -161,6 +162,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RecordWindowHandle.cpp" />
     <ClCompile Include="WindowClass.cpp" />
     <ClCompile Include="WindowCreator.cpp" />
   </ItemGroup>

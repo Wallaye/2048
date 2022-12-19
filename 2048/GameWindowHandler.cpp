@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "GameWindowHandler.h"
 #include "WindowClass.h"
+#include "RecordWindowHandle.h"
 
 Color colors[21] = {
     Color(195, 181, 169),
@@ -47,8 +48,8 @@ HWND hBtn;
 LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     g = GameWindowHandler::GetInstance();
-    GetClientRect(hWnd, &g->clientRect);
-    HDC hdc = GetDC(hWnd);
+    //GetClientRect(hWnd, &g->clientRect);
+    //HDC hdc = GetDC(hWnd);
     DIRECTION direction;
 
     switch (message)
@@ -56,7 +57,7 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
     case WM_COMMAND:
         if (LOWORD(wParam) == 10001) {
             DestroyWindow(hWnd);
-            ShowWindow(WindowClass::windows[0]->hWnd, SW_SHOW);
+            ShowWindow(WindowClass::WelcomeWindow->hWnd, SW_SHOW);
         }
         return 0;
     case WM_KEYDOWN:
@@ -90,6 +91,12 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
                     30, 50, 70, 30, hWnd, (HMENU)10001,
                     (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
                     NULL);
+            if (g->game->size == 4) {
+                if (!g->game->IsGame) {
+                    RecordWindowHandle::TryAddRecord(g->game->playerName, g->game->score);
+                    RecordWindowHandle::SaveRecords();
+                }
+            }
         }
         else return DefWindowProc(hWnd, message, wParam, lParam); 
         return 0;
@@ -110,10 +117,12 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
         g->_worker->EndScene();
     }
     return 0;
+    case WM_CLOSE:
+        PostQuitMessage(0);
+        return 0;
     case WM_DESTROY:
         delete GameWindowHandler::_instance->game;
-        delete WindowClass::windows[1];
-        WindowClass::windows.erase(WindowClass::windows.begin() + 1);
+        delete WindowClass::GameWindow;
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
