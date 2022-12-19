@@ -2,6 +2,7 @@
 #include "WindowCreator.h"
 #include "WindowClass.h"
 
+
 WindowCreator::WindowCreator() { };
 WindowCreator::~WindowCreator() { };
 

@@ -8,6 +8,10 @@
 #include "GameWindowHandler.h"
 #include "RecordWindowHandle.h"
 
+#    pragma comment(linker, "\"/manifestdependency:type='win32' \
+name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
+processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
 #define MAX_LOADSTRING 100
 #define START_GAME_BTN 10000
 #define RECORDS_GAME_BTN 10002
@@ -86,10 +90,10 @@ WCHAR ComboBoxTexts[4][4] = {
 WCHAR A[4];
 HWND hCmb, hEdit, hBtnStart, hBtnRecords;
 int index = 1;
+HDC hdc;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     GetClientRect(hWnd, &clientRect);
-    HDC hdc = GetDC(hWnd);
     switch (message)
     {
     case WM_COMMAND:
@@ -99,6 +103,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if (ind != CB_ERR) {
                 index = ind;
             }
+            DeleteObject(control);
         }
         if (LOWORD(wParam) == START_GAME_BTN) {
             int length = GetWindowTextLength(hEdit);
@@ -113,19 +118,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             gwh->game = new Game(index + 3, str);
             gwh->options = options[index];
             RECT rect = { gwh->options.rect.X, gwh->options.rect.Y, gwh->options.rect.Width, gwh->options.rect.Height };
-            GameWindow = new WindowClass(hInst, GameWindowHandler::GameWindowWndProc, szGameWindowClass, szTitle, _nCmdShow, rect);
-            WindowClass::GameWindow = GameWindow;
+            GameWindow = new WindowClass(hInst, GameWindowHandler::GameWindowWndProc, szGameWindowClass, (WCHAR*)L"Game", _nCmdShow, rect);
             GameWindow->create();
+            WindowClass::GameWindow = GameWindow;
             ShowWindow(GameWindow->hWnd, GameWindow->nCmdShow);
             UpdateWindow(GameWindow->hWnd);
             ShowWindow(WelcomeWindow->hWnd, SW_HIDE); //Hide welcome window
             //delete[] str;
         }
         else if (LOWORD(wParam) == RECORDS_GAME_BTN) {
-            RECT rect = { 0, 0, 300, 600 };
-            RecordWindow = new WindowClass(hInst, RecordWindowHandle::RecordWndProc, szRecordsWindowClass, szTitle, _nCmdShow, rect);
-            WindowClass::RecordWindow = RecordWindow;
-            RecordWindow->create();
+            if (RecordWindow == NULL) {
+                RECT rect = { 0, 0, 350, 600 };
+                RecordWindow = new WindowClass(hInst, RecordWindowHandle::RecordWndProc, szRecordsWindowClass, (WCHAR*)L"Records", _nCmdShow, rect);
+                RecordWindow->create();
+                WindowClass::RecordWindow = RecordWindow;
+            }
             ShowWindow(RecordWindow->hWnd, RecordWindow->nCmdShow);
             UpdateWindow(RecordWindow->hWnd);
             ShowWindow(WelcomeWindow->hWnd, SW_HIDE);

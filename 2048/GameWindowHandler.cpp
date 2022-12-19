@@ -43,21 +43,21 @@ GameWindowHandler* GameWindowHandler::GetInstance() {
 void Move(DIRECTION);
 
 GameWindowHandler* g;
-
+HFONT __NewFont = CreateFont(40, 16, 0, 0, 400, 0, 0, 0,
+    DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+    DEFAULT_PITCH | FF_DONTCARE, L"Arial");
 HWND hBtn;
 LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     g = GameWindowHandler::GetInstance();
-    //GetClientRect(hWnd, &g->clientRect);
-    //HDC hdc = GetDC(hWnd);
     DIRECTION direction;
 
     switch (message)
     {
     case WM_COMMAND:
         if (LOWORD(wParam) == 10001) {
-            DestroyWindow(hWnd);
             ShowWindow(WindowClass::WelcomeWindow->hWnd, SW_SHOW);
+            DestroyWindow(hWnd);
         }
         return 0;
     case WM_KEYDOWN:
@@ -85,12 +85,14 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
                 break;
             }
             g->game->IsGame = g->game->CheckForEnd();
-            if (hBtn == NULL && !g->game->IsGame)
+            if (!g->game->IsGame) {
                 HWND hBtn = CreateWindowW(L"BUTTON", L"BACK",
                     WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-                    30, 50, 70, 30, hWnd, (HMENU)10001,
+                    10, 50, 120, 50, hWnd, (HMENU)10001,
                     (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
                     NULL);
+                SendMessage(hBtn, WM_SETFONT, WPARAM(__NewFont), 0);
+            }
             if (g->game->size == 4) {
                 if (!g->game->IsGame) {
                     RecordWindowHandle::TryAddRecord(g->game->playerName, g->game->score);
@@ -118,11 +120,13 @@ LRESULT CALLBACK GameWindowHandler::GameWindowWndProc(HWND hWnd, UINT message, W
     }
     return 0;
     case WM_CLOSE:
+        DeleteObject(__NewFont);
         PostQuitMessage(0);
         return 0;
     case WM_DESTROY:
-        delete GameWindowHandler::_instance->game;
+        DeleteObject(__NewFont);
         delete WindowClass::GameWindow;
+        delete GameWindowHandler::_instance->game;
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
