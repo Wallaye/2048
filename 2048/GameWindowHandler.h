@@ -4,8 +4,9 @@
 
 class GameWindowOptions {
 public:
-	RECT rect;
-	RECT field;
+	RectF rect;
+	RectF field;
+	PointF scorePoint;
 	int CellSize;
 	int FieldSize;
 };

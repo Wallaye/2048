@@ -65,10 +65,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 //WelcomeWindow WNDPROC
 GameWindowOptions options[4]{
-    {{0, 0, 600, 750}, {10, 140, 560, 565}, 50, 50},
-    {{0, 0, 600, 750}, {10, 140, 560, 565}, 127, 10},
-    {{0, 0, 600, 750}, {10, 140, 560, 565}, 127, 10},
-    {{0, 0, 600, 750}, {10, 140, 560, 565}, 127, 10},
+    {{0, 0, 500, 650}, {10, 140, 460, 465}, {150, 50}, 140, 10},
+    {{0, 0, 600, 750}, {10, 140, 560, 565}, {250, 50}, 127, 10},
+    {{0, 0, 690, 850}, {10, 140, 660, 665}, {300, 50}, 120, 10},
+    {{0, 0, 820, 980}, {10, 140, 790, 795}, {350, 50}, 120, 10},
 };
 WCHAR ComboBoxTexts[4][4] = {
     TEXT("3x3"), TEXT("4x4"), TEXT("5x5"), TEXT("6x6")
@@ -98,7 +98,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             GameWindowHandler* gwh = GameWindowHandler::GetInstance();
             gwh->game = new Game(index + 3, str);
             gwh->options = options[index];
-            GameWindow = new WindowClass(hInst, GameWindowHandler::GameWindowWndProc, szGameWindowClass, szTitle, _nCmdShow, options[0].rect);
+            RECT rect = { gwh->options.rect.X, gwh->options.rect.Y, gwh->options.rect.Width, gwh->options.rect.Height };
+            GameWindow = new WindowClass(hInst, GameWindowHandler::GameWindowWndProc, szGameWindowClass, szTitle, _nCmdShow, rect);
             GameWindow->create();
             ShowWindow(WelcomeWindow->hWnd, SW_HIDE); //Hide welcome window
         }

@@ -114,18 +114,21 @@ void Move(DIRECTION direction) {
 }
 
 void GameWindowHandler::Draw() {
-    const int CellSize = 127;
+    const int CellSize = g->options.CellSize;
     const int BorderSize = 10;
     RectF rect;
     StringFormat format;
     format.SetAlignment(StringAlignmentCenter);
     format.SetLineAlignment(StringAlignmentCenter);
-    g->_worker->FillRect(RectF(0, 0, 600, 750), Color(240, 240, 240));
-    g->_worker->FillRect(RectF(10, 140, 560, 565), Color(159, 136, 117));
-    g->_worker->DrawString((char*)"SCORE:", 1, PointF(250, 50), Color(0, 0, 0));
+    g->_worker->FillRect(g->options.rect, Color(240, 240, 240));
+    g->_worker->FillRect(g->options.field, Color(159, 136, 117));
+    g->_worker->DrawString((char*)"SCORE:", 1, g->options.scorePoint, Color(0, 0, 0));
     char buff[10];
     _itoa_s(game->score, buff, 10);
-    g->_worker->DrawString(buff, 1, PointF(480, 75), Color(0, 0, 0), &format);
+    PointF score = g->options.scorePoint;
+    score.Y += 25;
+    score.X += 240;
+    g->_worker->DrawString(buff, 1, score, Color(0, 0, 0), &format);
     for (int i = 0; i < g->game->size; i++) {
         for (int j = 0; j < g->game->size; j++) {
             rect.X = 10 + (j + 1) * BorderSize + j * CellSize;
